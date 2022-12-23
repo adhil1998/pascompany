@@ -1,5 +1,4 @@
 from common.functions import ChoiceAdapter
-from accounts.models import Contact
 
 
 class VTokenStatusChoices(ChoiceAdapter):

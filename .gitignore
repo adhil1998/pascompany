@@ -13,6 +13,8 @@ celerybeat.pid
 # Django media
 */media/*
 
+*/__pycache__/*
+
 # Temp files
 ~*
 
@@ -23,3 +25,6 @@ database_dumps/*
 # Config files
 dev_config.ini
 prod_config.ini
+
+#configs
+.env
