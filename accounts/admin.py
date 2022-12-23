@@ -2,7 +2,7 @@ from pyexpat import model
 from django.utils.translation import gettext_lazy as _
 
 from django.contrib import admin
-from accounts.models import User, AccessToken, Contact
+from accounts.models import User, AccessToken
 from django.contrib.auth.admin import UserAdmin
 
 
@@ -38,4 +38,3 @@ class UserAdminNew(UserAdmin):
 
 
 admin.site.register(User, UserAdminNew)
-admin.site.register(Contact)

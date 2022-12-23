@@ -4,9 +4,8 @@ from django.contrib.auth import authenticate
 
 from common.exceptions import UnauthorizedAccess
 from common.fields import KWArgsObjectField
-from accounts.models import User, Contact
+from accounts.models import User
 from accounts.utilities import upload_image_and_get_url
-from transactioins.models import Transaction
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -62,58 +61,3 @@ class LoginSerializer(serializers.Serializer):
             "bearer": instance.issue_access_token(),
         }
         return data
-
-
-class ContactSerializer(serializers.ModelSerializer):
-    """Serializer for contacts"""
-    user = KWArgsObjectField()
-    transactions_detail = serializers.SerializerMethodField(read_only=True)
-    image = serializers.ImageField(write_only=True, required=False)
-
-    class Meta:
-        model = Contact
-        fields = ['name', 'phone', 'address', 'idencode',
-                  'user', 'transactions_detail', 'image']
-
-    def get_transactions_detail(self, obj):
-        """Method for get transaction details with a contact"""
-        total_income = Transaction.objects.filter(
-            contact=obj, type=100, parent_transaction=None).annotate(
-            child_sum=F('amount') - Sum(
-            'child_transactions__amount', default=0)).aggregate(
-            Sum('child_sum', default=0))['child_sum__sum']
-        total_expense = Transaction.objects.filter(
-            contact=obj, type=200, parent_transaction=None).annotate(
-            child_sum=F('amount') - Sum(
-            'child_transactions__amount', default=0)).aggregate(
-            Sum('child_sum', default=0))['child_sum__sum']
-        if total_income >= total_expense:
-            data = {"amount": total_income - total_expense,
-                    'type': 100}
-        else:
-            data = {"amount": total_expense - total_income,
-                    'type': 200}
-        return data
-
-    def create(self, validated_data):
-        """Override create"""
-        if 'image' in validated_data.keys():
-            validated_data['image'] = upload_image_and_get_url(
-                validated_data.pop('image'), validated_data['name'])
-        validated_data['user'] = self.context['view'].kwargs['user']
-        contact = super(ContactSerializer, self).create(validated_data)
-        return contact
-
-    def to_representation(self, instance):
-        """Override output"""
-        data = super(ContactSerializer, self).to_representation(instance)
-        data['image'] = instance.image
-        return data
-
-
-class ContactListSerializer(serializers.ModelSerializer):
-    """Serializer for contacts"""
-
-    class Meta:
-        model = Contact
-        fields = ['name', 'idencode']
