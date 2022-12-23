@@ -61,15 +61,3 @@ class AccessToken(models.Model):
         """Function  to change token."""
         self.key = self.generate_unique_key()
         self.save()
-
-
-class Contact(AbstractBaseModel):
-    """M0del to create data of contacts"""
-    user = models.ForeignKey('User', on_delete=models.CASCADE, null=True, blank=True)
-    name = models.CharField(max_length=80)
-    phone = models.CharField(max_length=15)
-    address = models.TextField(null=True, blank=True)
-    image = models.URLField(null=True, blank=True)
-
-    def __str__(self):
-        return f'{self.name} {self.idencode}'
