@@ -1,8 +1,12 @@
 from hashids import Hashids
 import enum
+from random import randint
+
+from django.conf import settings
+from django.utils.timezone import localtime
+
 from rest_framework.response import Response
 from rest_framework import status
-
 
 def encode(value):
     """
@@ -68,3 +72,27 @@ def success_response(data={}, message=None, status=status.HTTP_200_OK):
     if not message:
         response['detail'] = 'Success.'
     return Response(response, status=status)
+
+def generate_random_number(digits):
+    """
+    Function to generate n dig random number.
+
+    Input Params:
+        digits(int): number of digits
+    Returns:
+        (int): number
+    """
+    range_start = 10**(digits - 1)
+    range_end = (10**digits) - 1
+    return randint(range_start, range_end)
+
+
+def date_time_desc(date):
+    """Function to format date time."""
+    try:
+        date = localtime(date)
+    except:
+        pass
+    date = date.strftime('%d %B %Y, %H:%M %p')
+    date += ', Timezone: %s' % settings.TIME_ZONE
+    return date

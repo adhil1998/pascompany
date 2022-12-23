@@ -6,7 +6,7 @@ from django.conf import settings
 # Create your models here.
 class AbstractBaseModel(models.Model):
     """
-    store common data fro all table
+    store common data from all table
     """
 
     creator = models.ForeignKey(
