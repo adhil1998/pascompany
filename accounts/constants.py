@@ -1,6 +1,12 @@
 from common.functions import ChoiceAdapter
 
 
+class UserTypeChoices(ChoiceAdapter):
+    ADMIN = 101
+    EXECUTIVE = 201
+    SALESMAN = 301
+
+
 class VTokenStatusChoices(ChoiceAdapter):
     VTOKEN_STATUS_UNUSED = 1
     VTOKEN_STATUS_USED = 2

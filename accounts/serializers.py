@@ -11,12 +11,14 @@ from accounts.utilities import upload_image_and_get_url
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for lis and create User(s)"""
     profile_pic = serializers.ImageField(write_only=True, required=False)
+    aadhar = serializers.ImageField(write_only=True, required=False)
 
     class Meta:
         """meta info"""
         model = User
         fields = ['username', 'idencode', 'email', 'dob', 'phone_number',
-                  'password', 'first_name', 'last_name', 'profile_pic']
+                  'password', 'first_name', 'last_name', 'profile_pic', 'type',
+                  'aadhar']
         extra_kwargs = {
             'password': {'write_only': True}
         }
@@ -27,7 +29,13 @@ class UserSerializer(serializers.ModelSerializer):
             validated_data['profile_pic'] = upload_image_and_get_url(
                 validated_data.pop('profile_pic'),
                 validated_data['first_name'] + validated_data['last_name'])
+        if 'aadhar' in validated_data.keys():
+            validated_data['aadhar'] = upload_image_and_get_url(
+                validated_data.pop('aadhar'),
+                validated_data['first_name'] + validated_data['last_name'] +
+                'aadhar')
         password = validated_data.pop('password')
+        print(self.context['view'].kwargs['user'])
         user = super(UserSerializer, self).create(validated_data)
         user.set_password(password)
         user.save()
@@ -37,6 +45,7 @@ class UserSerializer(serializers.ModelSerializer):
         """Override output"""
         data = super(UserSerializer, self).to_representation(instance)
         data['profile_pic'] = instance.profile_pic
+        data['aadhar'] = instance.aadhar
         return data
 
 

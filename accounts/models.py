@@ -5,8 +5,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 
-from accounts.constants import VTokenStatusChoices, VTokenTypeChoices, \
-    TOKEN_VALIDITY, OTP_NOTIFICATIONS
+from accounts import constants as acc_constants
 from common.functions import encode, decode, generate_random_number, date_time_desc
 from common.models import AbstractBaseModel
 from django.utils.crypto import get_random_string
@@ -16,9 +15,14 @@ from django.utils.crypto import get_random_string
 
 class User(AbstractUser):
     """ User model """
-    phone_number = models.CharField(max_length=15, default=0, null=True, blank=True)
+    phone_number = models.CharField(
+        max_length=15, default=0, null=True, blank=True)
     dob = models.DateField(null=True, blank=True)
     profile_pic = models.URLField(null=True, blank=True)
+    aadhar = models.URLField(null=True, blank=True)
+    type = models.IntegerField(
+        default=acc_constants.UserTypeChoices.SALESMAN,
+        choices=acc_constants.UserTypeChoices.choices())
 
     def __str__(self):
         return f'{self.username} {self.idencode}'
@@ -95,11 +99,11 @@ class ValidationToken(AbstractBaseModel):
     key = models.CharField(
         default='', max_length=200, blank=True)
     status = models.IntegerField(
-        default=VTokenStatusChoices.VTOKEN_STATUS_UNUSED,
-        choices=VTokenStatusChoices.choices())
+        default=acc_constants.VTokenStatusChoices.VTOKEN_STATUS_UNUSED,
+        choices=acc_constants.VTokenStatusChoices.choices())
     expiry = models.DateTimeField(default=timezone.now)
     type = models.IntegerField(
-        default=0, choices=VTokenTypeChoices.choices())
+        default=0, choices=acc_constants.VTokenTypeChoices.choices())
 
     def __str__(self):
         """Object name in django admin."""
@@ -122,7 +126,7 @@ class ValidationToken(AbstractBaseModel):
         return super(ValidationToken, self).save(*args, **kwargs)
 
     def get_validity_period(self):
-        return TOKEN_VALIDITY[self.type]
+        return acc_constants.TOKEN_VALIDITY[self.type]
 
     def get_expiry(self):
         """Function to get the validity based on type."""
@@ -132,14 +136,14 @@ class ValidationToken(AbstractBaseModel):
 
     def generate_unique_key(self):
         """Function to generate unique key."""
-        if self.type not in OTP_NOTIFICATIONS:
+        if self.type not in acc_constants.OTP_NOTIFICATIONS:
             key = get_random_string(settings.ACCESS_TOKEN_LENGTH)
         else:
             key = generate_random_number(settings.OTP_LENGTH)
 
         if ValidationToken.objects.filter(
                 key=key, type=self.type,
-                status=VTokenStatusChoices.VTOKEN_STATUS_UNUSED).exists():
+                status=acc_constants.VTokenStatusChoices.VTOKEN_STATUS_UNUSED).exists():
             key = self.generate_unique_key()
         return key
 
@@ -148,7 +152,7 @@ class ValidationToken(AbstractBaseModel):
         status = True
         if not self.is_valid:
             status = False
-        self.status = VTokenStatusChoices.VTOKEN_STATUS_USED
+        self.status = acc_constants.VTokenStatusChoices.VTOKEN_STATUS_USED
         self.updater = self.user
         self.save()
         return status
@@ -157,7 +161,7 @@ class ValidationToken(AbstractBaseModel):
         """Function  to refresh the validation token."""
         if not self.is_valid:
             self.key = self.generate_unique_key()
-            self.status = VTokenStatusChoices.VTOKEN_STATUS_UNUSED
+            self.status = acc_constants.VTokenStatusChoices.VTOKEN_STATUS_UNUSED
         self.expiry = self.get_expiry()
         self.updater = self.user
         self.save()
@@ -165,15 +169,15 @@ class ValidationToken(AbstractBaseModel):
 
     def mark_as_used(self):
         """ Function to mark validation token as used """
-        self.status = VTokenStatusChoices.VTOKEN_STATUS_USED
+        self.status = acc_constants.VTokenStatusChoices.VTOKEN_STATUS_USED
         self.save()
 
     @staticmethod
-    def initialize(user, type):
+    def initialize(user, type, creator=None):
         """Function to initialize verification."""
         validation, created = ValidationToken.objects.get_or_create(
-            user=user, status=VTokenStatusChoices.VTOKEN_STATUS_UNUSED,
-            type=type, creator=user)
+            user=user, type=type, creator=creator,
+            status=acc_constants.VTokenStatusChoices.VTOKEN_STATUS_UNUSED)
         if not created:
             validation.refresh()
         return validation.notify()
@@ -192,6 +196,6 @@ class ValidationToken(AbstractBaseModel):
     def is_valid(self):
         """Function  which check if Validator is valid."""
         if self.expiry > timezone.now() and (
-                self.status == VTokenStatusChoices.VTOKEN_STATUS_UNUSED):
+                self.status == acc_constants.VTokenStatusChoices.VTOKEN_STATUS_UNUSED):
             return True
         return False
