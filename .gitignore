@@ -21,6 +21,7 @@ celerybeat.pid
 # Database dumps
 *.dump
 database_dumps/*
+fabfile/*
 
 # Config files
 dev_config.ini

@@ -2,6 +2,7 @@ from rest_framework import permissions
 from common.exceptions import BadRequest, UnauthorizedAccess
 from common.functions import decode
 from accounts.models import AccessToken, User
+from accounts.constants import UserTypeChoices
 
 
 class IsAuthenticated(permissions.BasePermission):
@@ -25,4 +26,16 @@ class IsAuthenticated(permissions.BasePermission):
                 'Invalid Bearer token or User-Id, please re-login.')
         request.user = user
         view.kwargs['user'] = user
+        return True
+
+
+class IsAdmin(permissions.BasePermission):
+    """
+    Check if the user is admin.
+    """
+
+    def has_permission(self, request, view):
+        """Function to check user type."""
+        if view.kwargs['user'].type != UserTypeChoices.ADMIN:
+            raise UnauthorizedAccess('Restricted for this user')
         return True
