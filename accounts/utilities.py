@@ -1,16 +1,18 @@
-from datetime import datetime
-from django.conf import settings
-from django.core.files.storage import default_storage
 import pyrebase
+import environ
+from datetime import datetime
+from django.core.files.storage import default_storage
 
+env = environ.Env()
+environ.Env.read_env()
 config = {
-  "apiKey": settings.env('FIREBASE_API_KEY'),
-  "authDomain": settings.env('FIREBASE_AUTH_DOMAIN'),
-  "projectId": settings.env('FIREBASE_PROJECT_ID'),
-  "storageBucket": settings.env('FIREBASE_BUCKET'),
-  "messagingSenderId": settings.env('FIREBASE_SENDER_ID'),
-  "appId": settings.env('FIREBASE_APP_ID'),
-  "measurementId": settings.env('FIREBASE_MEASUREMENT_ID'),
+  "apiKey": env('FIREBASE_API_KEY'),
+  "authDomain": env('FIREBASE_AUTH_DOMAIN'),
+  "projectId": env('FIREBASE_PROJECT_ID'),
+  "storageBucket": env('FIREBASE_BUCKET'),
+  "messagingSenderId": env('FIREBASE_SENDER_ID'),
+  "appId": env('FIREBASE_APP_ID'),
+  "measurementId": env('FIREBASE_MEASUREMENT_ID'),
   "databaseURL": "",
 }
 firebase = pyrebase.initialize_app(config)

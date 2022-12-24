@@ -32,7 +32,7 @@ class UserAdminNew(UserAdmin):
             },
         ),
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
-        (_("extra"), {"fields": ("profile_pic",)}),
+        (_("extra"), {"fields": ("profile_pic", "aadhar", "type")}),
     )
     inlines = [AccessTokenAdmin]
 

@@ -35,7 +35,6 @@ class UserSerializer(serializers.ModelSerializer):
                 validated_data['first_name'] + validated_data['last_name'] +
                 'aadhar')
         password = validated_data.pop('password')
-        print(self.context['view'].kwargs['user'])
         user = super(UserSerializer, self).create(validated_data)
         user.set_password(password)
         user.save()
@@ -68,5 +67,6 @@ class LoginSerializer(serializers.Serializer):
             "idencode": instance.idencode,
             "name": instance.username,
             "bearer": instance.issue_access_token(),
+            "type": instance.type
         }
         return data
